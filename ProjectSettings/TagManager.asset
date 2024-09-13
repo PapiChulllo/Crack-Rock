@@ -44,6 +44,12 @@ TagManager:
   - name: Background
     uniqueID: 2563699003
     locked: 0
+  - name: Rocks
+    uniqueID: 2849063279
+    locked: 0
+  - name: Huge
+    uniqueID: 865186239
+    locked: 0
   - name: Player
     uniqueID: 800579913
     locked: 0
