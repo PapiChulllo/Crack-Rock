@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - SolidObjects
+  - Grass
   - 
   - 
   - 
@@ -43,6 +43,9 @@ TagManager:
     locked: 0
   - name: Background
     uniqueID: 2563699003
+    locked: 0
+  - name: Foreground
+    uniqueID: 2401973313
     locked: 0
   - name: Rocks
     uniqueID: 2849063279
