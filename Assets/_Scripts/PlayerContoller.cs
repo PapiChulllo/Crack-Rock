@@ -1,15 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class PlayerContoller : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     public float movementSpeed;
     public LayerMask solidObjectsLayer;
     public bool isMoving;
     public LayerMask grassLayer;
-    private Vector2 input;
+    public float encounterCooldown = 3f;
+    private float encounterTimer = 0f;
 
+    private Vector2 input;
     private Animator animator;
 
     private void Awake()
@@ -19,7 +21,9 @@ public class PlayerContoller : MonoBehaviour
 
     private void Update()
     {
-        if (!isMoving)
+        encounterTimer -= Time.deltaTime;
+
+        if (!isMoving && encounterTimer <= 0)
         {
             input.x = Input.GetAxisRaw("Horizontal");
             input.y = Input.GetAxisRaw("Vertical");
@@ -35,48 +39,48 @@ public class PlayerContoller : MonoBehaviour
                 targetPos.x += input.x;
                 targetPos.y += input.y;
 
-                if (IsWalkable(targetPos)) 
-                StartCoroutine(Move(targetPos));
+                if (IsWalkable(targetPos))
+                    StartCoroutine(Move(targetPos));
             }
-                
         }
 
         animator.SetBool("isMoving", isMoving);
-     }
-    
-     IEnumerator Move(Vector3 targetPos)
+    }
+
+    IEnumerator Move(Vector3 targetPos)
     {
         isMoving = true;
         while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, movementSpeed * Time.deltaTime); // Use movementSpeed
+            transform.position = Vector3.MoveTowards(transform.position, targetPos, movementSpeed * Time.deltaTime);
             yield return null;
         }
 
         transform.position = targetPos;
-
         isMoving = false;
 
-        CheckForEncounters(); 
+        CheckForEncounters();
     }
 
     private bool IsWalkable(Vector3 targetPos)
     {
-        if (Physics2D.OverlapCircle(targetPos, 0.2f, solidObjectsLayer) != null)
-        {
-            return false;
-        }
-           return true;
+        return Physics2D.OverlapCircle(targetPos, 0.2f, solidObjectsLayer) == null;
     }
 
     private void CheckForEncounters()
     {
         if (Physics2D.OverlapCircle(transform.position, 0.2f, grassLayer) != null)
         {
-            if (Random.Range(1,101) <=10)
+            if (Random.Range(1, 101) <= 10)
             {
                 Debug.Log("Battle Has Started");
+                SceneManager.LoadScene("BattleScene");
             }
         }
+    }
+
+    public void ResetEncounterTimer()
+    {
+        encounterTimer = encounterCooldown;
     }
 }

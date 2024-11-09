@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b0018cd1beb011146923ec685e03b8b6
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - playerPrefab: {fileID: 4670571340134849411, guid: d9aa71e7d1b460c4ebd09c9dbf0a1227, type: 3}
+  - opponentPrefab: {fileID: 8681232429465359727, guid: 5a875a297a288584dbd6255ed92658cd, type: 3}
+  - battleUI: {instanceID: 0}
+  - playerSpawnPoint: {instanceID: 0}
+  - opponentSpawnPoint: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
