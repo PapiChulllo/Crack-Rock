@@ -20,8 +20,9 @@ public class BattleManager : MonoBehaviour
     private bool inBattle = false;
     private int playerHealth = 100;
     private int opponentHealth = 100;
-    private int playerMana = 20;
-    private int opponentMana = 20;
+    private int playerMana = 20; // Default player mana
+    private int opponentMana = 20; // Default opponent mana
+    private int maxMana = 20; // Player's max mana
     private bool firstWin = false;
 
     private void Start()
@@ -62,7 +63,7 @@ public class BattleManager : MonoBehaviour
                 int index = i;
                 abilityButtons[i].onClick.RemoveAllListeners();
                 abilityButtons[i].onClick.AddListener(() => UseAbility(index));
-                abilityButtons[i].interactable = playerMana >= ability.manaCost;
+                abilityButtons[i].interactable = playerMana >= ability.manaCost; // Only enable if enough mana
             }
             else
             {
@@ -103,12 +104,10 @@ public class BattleManager : MonoBehaviour
 
         if (opponentMana < 10)
         {
-            // If the enemy is low on mana, it will try to meditate
             MeditateOpponent();
         }
         else
         {
-            // Decide whether to punch or kick based on random choice
             int choice = Random.Range(0, 2); // 0 for Punch, 1 for Kick
 
             if (choice == 0)
@@ -147,7 +146,7 @@ public class BattleManager : MonoBehaviour
     {
         if (!playerTurn || !inBattle) return;
 
-        playerMana += 15;
+        playerMana = Mathf.Min(playerMana + 15, maxMana); // Regain mana up to maxMana
         Debug.Log("Player meditates and regains mana.");
         UpdateAbilityButtons();
         playerTurn = false;
@@ -158,6 +157,14 @@ public class BattleManager : MonoBehaviour
     {
         opponentMana += 15;
         Debug.Log("Opponent meditates and regains mana.");
+    }
+
+    public void IncreaseMaxMana(int amount)
+    {
+        maxMana += amount;
+        playerMana = maxMana; // Fully refill mana when max increases
+        Debug.Log($"Max Mana increased by {amount}. Current Max Mana: {maxMana}");
+        UpdateAbilityButtons();
     }
 
     private void WinBattle()
@@ -174,7 +181,7 @@ public class BattleManager : MonoBehaviour
             UpdateAbilityButtons();
         }
 
-        fleeButton.interactable = true;
+        fleeButton.interactable = true; // Enable flee button after winning
     }
 
     private void LoseBattle()
