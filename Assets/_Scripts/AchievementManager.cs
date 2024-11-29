@@ -1,77 +1,105 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
+using TMPro;
 
 public class AchievementManager : MonoBehaviour
 {
-    public static AchievementManager Instance; // Singleton for global access
+    public GameObject achievementsPanel; // Panel for achievements screen
+    public GameObject achievementPopup; // Popup notification
+    public TextMeshProUGUI popupText;   // Text in the popup notification
+    public GameObject scrollViewContent; // Content of the scroll view
+    public GameObject achievementPrefab; // Prefab for each achievement in the list
 
-    public List<Achievement> achievements = new List<Achievement>(); // List of achievements
-    public GameObject achievementPopup; // UI popup for unlocked achievements
-    public TMPro.TextMeshProUGUI achievementPopupText; // Popup text
-
-    private void Awake()
+    private Dictionary<string, bool> achievements = new Dictionary<string, bool>
     {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject); // Persist between scenes
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
+        { "Take 10 steps in the Overworld", false },
+        { "Open the Achievements Screen", false }
+    };
+
+    private int stepsTaken = 0; // Tracks the number of steps taken
+    private bool isPanelActive = false;
 
     private void Start()
     {
-        // Initialize achievements
-        achievements.Add(new Achievement("Explorer", "Take 10 steps in the Overworld", false));
-        achievements.Add(new Achievement("Curious Mind", "Open the Achievements Screen", false));
+        UpdateAchievementsScreen();
+    }
+
+    private void Update()
+    {
+        // Toggle achievements screen with a key (e.g., 'P')
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            ToggleAchievementsScreen();
+            UnlockAchievement("Open the Achievements Screen");
+        }
+    }
+
+    public void IncrementSteps()
+    {
+        stepsTaken++; // Increment step count
+
+        // Check if the "Take 10 Steps" achievement is met
+        if (stepsTaken == 10 && achievements.ContainsKey("Take 10 steps in the Overworld") && !achievements["Take 10 steps in the Overworld"])
+        {
+            achievements["Take 10 steps in the Overworld"] = true;
+            ShowPopup("Take 10 steps in the Overworld");
+            UpdateAchievementsScreen();
+        }
     }
 
     public void UnlockAchievement(string name)
     {
-        Achievement achievement = achievements.Find(a => a.name == name);
-        if (achievement != null && !achievement.isUnlocked)
+        if (achievements.ContainsKey(name) && !achievements[name])
         {
-            achievement.isUnlocked = true;
-            Debug.Log($"Achievement Unlocked: {achievement.name}");
-            ShowAchievementPopup(achievement.name);
+            achievements[name] = true;
+            ShowPopup(name);
+            UpdateAchievementsScreen();
         }
     }
 
-    private void ShowAchievementPopup(string achievementName)
+    private void ShowPopup(string achievementName)
     {
-        if (achievementPopup != null)
+        if (achievementPopup != null && popupText != null)
         {
-            achievementPopupText.text = $"Achievement Unlocked: {achievementName}!";
+            popupText.text = $"Achievement Unlocked: {achievementName}";
             achievementPopup.SetActive(true);
-            StartCoroutine(HideAchievementPopup());
+            Invoke(nameof(HidePopup), 3f); // Hide popup after 3 seconds
         }
     }
 
-    private System.Collections.IEnumerator HideAchievementPopup()
+    private void HidePopup()
     {
-        yield return new WaitForSeconds(3f); // Show for 3 seconds
         if (achievementPopup != null)
         {
             achievementPopup.SetActive(false);
         }
     }
-}
 
-[System.Serializable]
-public class Achievement
-{
-    public string name;
-    public string description;
-    public bool isUnlocked;
-
-    public Achievement(string name, string description, bool isUnlocked)
+    private void ToggleAchievementsScreen()
     {
-        this.name = name;
-        this.description = description;
-        this.isUnlocked = isUnlocked;
+        isPanelActive = !isPanelActive;
+        achievementsPanel.SetActive(isPanelActive);
+    }
+
+    private void UpdateAchievementsScreen()
+    {
+        if (scrollViewContent == null || achievementPrefab == null) return;
+
+        // Clear previous achievements
+        foreach (Transform child in scrollViewContent.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Add updated achievements
+        foreach (var achievement in achievements)
+        {
+            GameObject achievementEntry = Instantiate(achievementPrefab, scrollViewContent.transform);
+            TextMeshProUGUI text = achievementEntry.GetComponentInChildren<TextMeshProUGUI>();
+            if (text != null)
+            {
+                text.text = $"{achievement.Key}: {(achievement.Value ? "Unlocked" : "Locked")}";
+            }
+        }
     }
 }
