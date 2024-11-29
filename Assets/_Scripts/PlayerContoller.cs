@@ -13,10 +13,12 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 input;
     private Animator animator;
+    private AchievementManager achievementManager; // Reference to AchievementManager
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
+        achievementManager = FindObjectOfType<AchievementManager>();
     }
 
     private void Update()
@@ -40,7 +42,13 @@ public class PlayerController : MonoBehaviour
                 targetPos.y += input.y;
 
                 if (IsWalkable(targetPos))
+                {
                     StartCoroutine(Move(targetPos));
+                    if (achievementManager != null)
+                    {
+                        achievementManager.IncrementSteps(); // Increment steps for achievement
+                    }
+                }
             }
         }
 
@@ -71,9 +79,9 @@ public class PlayerController : MonoBehaviour
     {
         if (Physics2D.OverlapCircle(transform.position, 0.2f, grassLayer) != null)
         {
-            if (Random.Range(1, 101) <= 10)
+            if (UnityEngine.Random.Range(1, 101) <= 10) // Explicitly use UnityEngine.Random
             {
-                Debug.Log("Battle Has Started");
+                UnityEngine.Debug.Log("Battle Has Started"); // Explicitly use UnityEngine.Debug
                 SceneManager.LoadScene("BattleScene");
             }
         }
