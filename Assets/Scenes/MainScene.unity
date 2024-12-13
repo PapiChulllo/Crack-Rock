@@ -524,10 +524,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1460666100}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -0.000030517578}
+  m_SizeDelta: {x: 0, y: -183}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &305145592
 MonoBehaviour:
@@ -8712,7 +8712,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1649059677}
   m_HandleRect: {fileID: 1649059675}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -12199,7 +12199,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1459104189
 Transform:
   m_ObjectHideFlags: 0
@@ -12512,7 +12512,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -187, y: 89}
+  m_AnchoredPosition: {x: -23, y: 46}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1754638489
@@ -12548,7 +12548,7 @@ MonoBehaviour:
   achievementPopup: {fileID: 1459104188}
   popupText: {fileID: 1696761565}
   scrollViewContent: {fileID: 305145590}
-  achievementPrefab: {fileID: 0}
+  achievementPrefab: {fileID: 884400518568472513, guid: 4433b7b78b8c37f4ca2e98ea9a26a9d7, type: 3}
 --- !u!4 &1754638491
 Transform:
   m_ObjectHideFlags: 0
