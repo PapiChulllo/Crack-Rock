@@ -1,35 +1,31 @@
-using System.Collections;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
-    public float movementSpeed;
+    public float movementSpeed = 3f;  // Adjust the speed to control the character's movement
     public LayerMask solidObjectsLayer;
-    public bool isMoving;
     public LayerMask grassLayer;
-    public float encounterCooldown = 3f;
-    private float encounterTimer = 0f;
 
     private Vector2 input;
     private Animator animator;
-    private AchievementManager achievementManager; // Reference to AchievementManager
+    private MusicManager musicManager; // Reference to the MusicManager
+
+    private bool isMoving = false;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        achievementManager = FindObjectOfType<AchievementManager>();
+        musicManager = FindObjectOfType<MusicManager>();
     }
 
     private void Update()
     {
-        encounterTimer -= Time.deltaTime;
-
-        if (!isMoving && encounterTimer <= 0)
+        if (!isMoving)
         {
             input.x = Input.GetAxisRaw("Horizontal");
             input.y = Input.GetAxisRaw("Vertical");
 
+            // Ensure only one axis is used at a time
             if (input.x != 0) input.y = 0;
 
             if (input != Vector2.zero)
@@ -37,17 +33,14 @@ public class PlayerController : MonoBehaviour
                 animator.SetFloat("moveX", input.x);
                 animator.SetFloat("moveY", input.y);
 
-                var targetPos = transform.position;
+                // Calculate the target position
+                Vector3 targetPos = transform.position;
                 targetPos.x += input.x;
                 targetPos.y += input.y;
 
                 if (IsWalkable(targetPos))
                 {
                     StartCoroutine(Move(targetPos));
-                    if (achievementManager != null)
-                    {
-                        achievementManager.IncrementSteps(); // Increment steps for achievement
-                    }
                 }
             }
         }
@@ -55,9 +48,10 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("isMoving", isMoving);
     }
 
-    IEnumerator Move(Vector3 targetPos)
+    private System.Collections.IEnumerator Move(Vector3 targetPos)
     {
         isMoving = true;
+
         while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
         {
             transform.position = Vector3.MoveTowards(transform.position, targetPos, movementSpeed * Time.deltaTime);
@@ -67,6 +61,7 @@ public class PlayerController : MonoBehaviour
         transform.position = targetPos;
         isMoving = false;
 
+        // Check for encounters after completing movement
         CheckForEncounters();
     }
 
@@ -81,14 +76,20 @@ public class PlayerController : MonoBehaviour
         {
             if (UnityEngine.Random.Range(1, 101) <= 10) // Explicitly use UnityEngine.Random
             {
-                UnityEngine.Debug.Log("Battle Has Started"); // Explicitly use UnityEngine.Debug
-                SceneManager.LoadScene("BattleScene");
+                UnityEngine.Debug.Log("Encounter Started"); // Explicitly use UnityEngine.Debug
+                StartEncounter();
             }
         }
     }
 
-    public void ResetEncounterTimer()
+    private void StartEncounter()
     {
-        encounterTimer = encounterCooldown;
+        if (musicManager != null)
+        {
+            musicManager.PlayBattleMusic(); // Play battle music
+        }
+
+        // Load the battle scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene("BattleScene");
     }
 }
