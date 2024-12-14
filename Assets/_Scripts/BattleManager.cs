@@ -25,6 +25,8 @@ public class BattleManager : MonoBehaviour
     private int maxMana = 20; // Player's max mana
     private bool firstWin = false;
 
+    public TextMeshProUGUI battleLog; // Text to display battle updates
+
     private void Start()
     {
         PlayerProgression.InitializeAbilities();
@@ -45,6 +47,7 @@ public class BattleManager : MonoBehaviour
         meditateButton.onClick.AddListener(Meditate);
 
         playerTurn = true;
+        AddToBattleLog("Battle has started!");
     }
 
     private void UpdateAbilityButtons()
@@ -79,13 +82,13 @@ public class BattleManager : MonoBehaviour
         Ability selectedAbility = PlayerProgression.UnlockedAbilities[abilityIndex];
         if (playerMana < selectedAbility.manaCost)
         {
-            Debug.Log("Not enough mana for this ability!");
+            AddToBattleLog("Not enough mana for this ability!");
             return;
         }
 
         playerMana -= selectedAbility.manaCost;
         opponentHealth -= selectedAbility.damage;
-        Debug.Log($"Player used {selectedAbility.name}. Opponent's health is now {opponentHealth}");
+        AddToBattleLog($"Player used {selectedAbility.name}. Opponent's health is now {opponentHealth}");
         UpdateAbilityButtons();
 
         if (opponentHealth <= 0)
@@ -108,7 +111,7 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            int choice = Random.Range(0, 2); // 0 for Punch, 1 for Kick
+            int choice = UnityEngine.Random.Range(0, 2); // 0 for Punch, 1 for Kick
 
             if (choice == 0)
             {
@@ -133,13 +136,13 @@ public class BattleManager : MonoBehaviour
     {
         if (opponentMana < manaCost)
         {
-            Debug.Log("Opponent does not have enough mana to use " + abilityName);
+            AddToBattleLog("Opponent does not have enough mana to use " + abilityName);
             return;
         }
 
         opponentMana -= manaCost;
         playerHealth -= damage;
-        Debug.Log($"Opponent used {abilityName}. Player's health is now {playerHealth}");
+        AddToBattleLog($"Opponent used {abilityName}. Player's health is now {playerHealth}");
     }
 
     private void Meditate()
@@ -147,7 +150,7 @@ public class BattleManager : MonoBehaviour
         if (!playerTurn || !inBattle) return;
 
         playerMana = Mathf.Min(playerMana + 15, maxMana); // Regain mana up to maxMana
-        Debug.Log("Player meditates and regains mana.");
+        AddToBattleLog("Player meditates and regains mana.");
         UpdateAbilityButtons();
         playerTurn = false;
         StartCoroutine(OpponentTurn());
@@ -156,14 +159,14 @@ public class BattleManager : MonoBehaviour
     private void MeditateOpponent()
     {
         opponentMana += 15;
-        Debug.Log("Opponent meditates and regains mana.");
+        AddToBattleLog("Opponent meditates and regains mana.");
     }
 
     public void IncreaseMaxMana(int amount)
     {
         maxMana += amount;
         playerMana = maxMana; // Fully refill mana when max increases
-        Debug.Log($"Max Mana increased by {amount}. Current Max Mana: {maxMana}");
+        AddToBattleLog($"Max Mana increased by {amount}. Current Max Mana: {maxMana}");
         UpdateAbilityButtons();
     }
 
@@ -172,7 +175,7 @@ public class BattleManager : MonoBehaviour
         if (!inBattle) return;
 
         inBattle = false;
-        Debug.Log("Player wins the battle!");
+        AddToBattleLog("Player wins the battle!");
 
         if (!firstWin)
         {
@@ -187,7 +190,7 @@ public class BattleManager : MonoBehaviour
     private void LoseBattle()
     {
         inBattle = false;
-        Debug.Log("Player loses the battle.");
+        AddToBattleLog("Player loses the battle.");
         EndBattle();
     }
 
@@ -195,5 +198,13 @@ public class BattleManager : MonoBehaviour
     {
         battleUI.SetActive(false);
         SceneManager.LoadScene("MainScene");
+    }
+
+    private void AddToBattleLog(string message)
+    {
+        if (battleLog != null)
+        {
+            battleLog.text += message + "\n";
+        }
     }
 }
