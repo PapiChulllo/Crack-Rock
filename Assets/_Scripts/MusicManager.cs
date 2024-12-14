@@ -1,66 +1,66 @@
-using System.Collections;
 using UnityEngine;
 
 public class MusicManager : MonoBehaviour
 {
-    public AudioSource overworldMusic; // Reference to the overworld music AudioSource
-    public AudioSource battleMusic;   // Reference to the battle music AudioSource
-    public float fadeDuration = 1.5f; // Duration of the fade in/out
-
-    private AudioSource currentMusic; // Keeps track of the currently playing music
+    public AudioSource overworldMusic; // Assign AudioSource for overworld music
+    public AudioSource battleMusic;   // Assign AudioSource for battle music
 
     private void Start()
     {
-        // Ensure overworld music starts playing at the beginning
-        currentMusic = overworldMusic;
-        currentMusic.volume = 1f;
-        currentMusic.Play();
-    }
-
-    public void PlayBattleMusic()
-    {
-        // Switch to battle music
-        if (currentMusic != battleMusic)
-        {
-            StartCoroutine(FadeMusic(battleMusic));
-        }
+        PlayOverworldMusic(); // Start with overworld music
     }
 
     public void PlayOverworldMusic()
     {
-        // Switch back to overworld music
-        if (currentMusic != overworldMusic)
+        if (battleMusic.isPlaying)
         {
-            StartCoroutine(FadeMusic(overworldMusic));
+            StartCoroutine(FadeOut(battleMusic));
+        }
+        if (!overworldMusic.isPlaying)
+        {
+            overworldMusic.volume = 0;
+            overworldMusic.Play();
+            StartCoroutine(FadeIn(overworldMusic));
         }
     }
 
-    private IEnumerator FadeMusic(AudioSource newMusic)
+    public void PlayBattleMusic()
     {
-        if (currentMusic != null)
+        if (overworldMusic.isPlaying)
         {
-            // Fade out the current music
-            float startVolume = currentMusic.volume;
-            for (float t = 0; t < fadeDuration; t += Time.deltaTime)
-            {
-                currentMusic.volume = Mathf.Lerp(startVolume, 0, t / fadeDuration);
-                yield return null;
-            }
-            currentMusic.Stop();
-            currentMusic.volume = startVolume; // Reset volume for later use
+            StartCoroutine(FadeOut(overworldMusic));
         }
-
-        // Switch to the new music
-        currentMusic = newMusic;
-        currentMusic.volume = 0;
-        currentMusic.Play();
-
-        // Fade in the new music
-        for (float t = 0; t < fadeDuration; t += Time.deltaTime)
+        if (!battleMusic.isPlaying)
         {
-            currentMusic.volume = Mathf.Lerp(0, 1, t / fadeDuration);
+            battleMusic.volume = 0;
+            battleMusic.Play();
+            StartCoroutine(FadeIn(battleMusic));
+        }
+    }
+
+    private System.Collections.IEnumerator FadeIn(AudioSource audioSource, float duration = 1.5f)
+    {
+        float targetVolume = 1f;
+        audioSource.volume = 0;
+
+        while (audioSource.volume < targetVolume)
+        {
+            audioSource.volume += Time.deltaTime / duration;
             yield return null;
         }
-        currentMusic.volume = 1; // Ensure volume is set to max
+    }
+
+    private System.Collections.IEnumerator FadeOut(AudioSource audioSource, float duration = 1.5f)
+    {
+        float startVolume = audioSource.volume;
+
+        while (audioSource.volume > 0)
+        {
+            audioSource.volume -= Time.deltaTime / duration;
+            yield return null;
+        }
+
+        audioSource.Stop();
+        audioSource.volume = startVolume; // Reset volume for future use
     }
 }

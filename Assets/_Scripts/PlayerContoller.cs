@@ -1,46 +1,65 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
-    public float movementSpeed = 3f;  // Adjust the speed to control the character's movement
+    public float movementSpeed = 5f;
     public LayerMask solidObjectsLayer;
     public LayerMask grassLayer;
 
     private Vector2 input;
+    private bool isMoving;
     private Animator animator;
-    private MusicManager musicManager; // Reference to the MusicManager
+    private AchievementManager achievementManager;
+    private AudioSource audioSource;
 
-    private bool isMoving = false;
+    [Header("Footstep Settings")]
+    public AudioClip[] footstepSounds; // Array of footstep sounds
+    public float footstepInterval = 0.3f; // Time between footsteps
+
+    private float footstepTimer;
 
     private void Awake()
     {
         animator = GetComponent<Animator>();
-        musicManager = FindObjectOfType<MusicManager>();
+        achievementManager = FindObjectOfType<AchievementManager>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
     {
+        HandleMovement();
+    }
+
+    private void HandleMovement()
+    {
+        if (isMoving)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0)
+            {
+                PlayFootstep();
+                footstepTimer = footstepInterval;
+            }
+        }
+
         if (!isMoving)
         {
             input.x = Input.GetAxisRaw("Horizontal");
             input.y = Input.GetAxisRaw("Vertical");
 
-            // Ensure only one axis is used at a time
-            if (input.x != 0) input.y = 0;
+            if (input.x != 0) input.y = 0; // Prioritize horizontal movement
 
             if (input != Vector2.zero)
             {
                 animator.SetFloat("moveX", input.x);
                 animator.SetFloat("moveY", input.y);
 
-                // Calculate the target position
-                Vector3 targetPos = transform.position;
-                targetPos.x += input.x;
-                targetPos.y += input.y;
-
-                if (IsWalkable(targetPos))
+                Vector3 targetPosition = transform.position + new Vector3(input.x, input.y, 0);
+                if (IsWalkable(targetPosition))
                 {
-                    StartCoroutine(Move(targetPos));
+                    StartCoroutine(Move(targetPosition));
                 }
             }
         }
@@ -48,26 +67,23 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("isMoving", isMoving);
     }
 
-    private System.Collections.IEnumerator Move(Vector3 targetPos)
+    private IEnumerator Move(Vector3 targetPosition)
     {
         isMoving = true;
-
-        while ((targetPos - transform.position).sqrMagnitude > Mathf.Epsilon)
+        while ((targetPosition - transform.position).sqrMagnitude > Mathf.Epsilon)
         {
-            transform.position = Vector3.MoveTowards(transform.position, targetPos, movementSpeed * Time.deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, movementSpeed * Time.deltaTime);
             yield return null;
         }
-
-        transform.position = targetPos;
+        transform.position = targetPosition;
         isMoving = false;
 
-        // Check for encounters after completing movement
         CheckForEncounters();
     }
 
-    private bool IsWalkable(Vector3 targetPos)
+    private bool IsWalkable(Vector3 targetPosition)
     {
-        return Physics2D.OverlapCircle(targetPos, 0.2f, solidObjectsLayer) == null;
+        return Physics2D.OverlapCircle(targetPosition, 0.2f, solidObjectsLayer) == null;
     }
 
     private void CheckForEncounters()
@@ -76,20 +92,18 @@ public class PlayerController : MonoBehaviour
         {
             if (UnityEngine.Random.Range(1, 101) <= 10) // Explicitly use UnityEngine.Random
             {
-                UnityEngine.Debug.Log("Encounter Started"); // Explicitly use UnityEngine.Debug
-                StartEncounter();
+                UnityEngine.Debug.Log("Battle has started!"); // Explicitly use UnityEngine.Debug
+                SceneManager.LoadScene("BattleScene");
             }
         }
     }
 
-    private void StartEncounter()
+    private void PlayFootstep()
     {
-        if (musicManager != null)
+        if (footstepSounds.Length > 0 && audioSource != null)
         {
-            musicManager.PlayBattleMusic(); // Play battle music
+            AudioClip clip = footstepSounds[UnityEngine.Random.Range(0, footstepSounds.Length)];
+            audioSource.PlayOneShot(clip);
         }
-
-        // Load the battle scene
-        UnityEngine.SceneManagement.SceneManager.LoadScene("BattleScene");
     }
 }
