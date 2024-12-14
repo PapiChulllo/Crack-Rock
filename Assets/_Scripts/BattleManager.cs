@@ -16,6 +16,12 @@ public class BattleManager : MonoBehaviour
     public Button[] abilityButtons;
     public Button meditateButton;
 
+    // UI Elements for Health and Mana
+    public TextMeshProUGUI playerHealthText;
+    public TextMeshProUGUI playerManaText;
+    public TextMeshProUGUI opponentHealthText;
+    public TextMeshProUGUI opponentManaText;
+
     private bool playerTurn = true;
     private bool inBattle = false;
     private int playerHealth = 100;
@@ -24,8 +30,6 @@ public class BattleManager : MonoBehaviour
     private int opponentMana = 20; // Default opponent mana
     private int maxMana = 20; // Player's max mana
     private bool firstWin = false;
-
-    public TextMeshProUGUI battleLog; // Text to display battle updates
 
     private void Start()
     {
@@ -41,13 +45,14 @@ public class BattleManager : MonoBehaviour
 
         battleUI.SetActive(true);
         UpdateAbilityButtons();
+        UpdateUI();
+
         fleeButton.onClick.RemoveAllListeners();
         fleeButton.onClick.AddListener(EndBattle);
         meditateButton.onClick.RemoveAllListeners();
         meditateButton.onClick.AddListener(Meditate);
 
         playerTurn = true;
-        AddToBattleLog("Battle has started!");
     }
 
     private void UpdateAbilityButtons()
@@ -82,14 +87,13 @@ public class BattleManager : MonoBehaviour
         Ability selectedAbility = PlayerProgression.UnlockedAbilities[abilityIndex];
         if (playerMana < selectedAbility.manaCost)
         {
-            AddToBattleLog("Not enough mana for this ability!");
+            UnityEngine.Debug.Log("Not enough mana for this ability!");
             return;
         }
 
         playerMana -= selectedAbility.manaCost;
         opponentHealth -= selectedAbility.damage;
-        AddToBattleLog($"Player used {selectedAbility.name}. Opponent's health is now {opponentHealth}");
-        UpdateAbilityButtons();
+        UpdateUI();
 
         if (opponentHealth <= 0)
         {
@@ -136,13 +140,13 @@ public class BattleManager : MonoBehaviour
     {
         if (opponentMana < manaCost)
         {
-            AddToBattleLog("Opponent does not have enough mana to use " + abilityName);
+            UnityEngine.Debug.Log("Opponent does not have enough mana to use " + abilityName);
             return;
         }
 
         opponentMana -= manaCost;
         playerHealth -= damage;
-        AddToBattleLog($"Opponent used {abilityName}. Player's health is now {playerHealth}");
+        UpdateUI();
     }
 
     private void Meditate()
@@ -150,8 +154,7 @@ public class BattleManager : MonoBehaviour
         if (!playerTurn || !inBattle) return;
 
         playerMana = Mathf.Min(playerMana + 15, maxMana); // Regain mana up to maxMana
-        AddToBattleLog("Player meditates and regains mana.");
-        UpdateAbilityButtons();
+        UpdateUI();
         playerTurn = false;
         StartCoroutine(OpponentTurn());
     }
@@ -159,15 +162,14 @@ public class BattleManager : MonoBehaviour
     private void MeditateOpponent()
     {
         opponentMana += 15;
-        AddToBattleLog("Opponent meditates and regains mana.");
+        UpdateUI();
     }
 
     public void IncreaseMaxMana(int amount)
     {
         maxMana += amount;
         playerMana = maxMana; // Fully refill mana when max increases
-        AddToBattleLog($"Max Mana increased by {amount}. Current Max Mana: {maxMana}");
-        UpdateAbilityButtons();
+        UpdateUI();
     }
 
     private void WinBattle()
@@ -175,7 +177,7 @@ public class BattleManager : MonoBehaviour
         if (!inBattle) return;
 
         inBattle = false;
-        AddToBattleLog("Player wins the battle!");
+        UnityEngine.Debug.Log("Player wins the battle!");
 
         if (!firstWin)
         {
@@ -190,7 +192,7 @@ public class BattleManager : MonoBehaviour
     private void LoseBattle()
     {
         inBattle = false;
-        AddToBattleLog("Player loses the battle.");
+        UnityEngine.Debug.Log("Player loses the battle.");
         EndBattle();
     }
 
@@ -200,11 +202,11 @@ public class BattleManager : MonoBehaviour
         SceneManager.LoadScene("MainScene");
     }
 
-    private void AddToBattleLog(string message)
+    private void UpdateUI()
     {
-        if (battleLog != null)
-        {
-            battleLog.text += message + "\n";
-        }
+        if (playerHealthText != null) playerHealthText.text = $"Player Health: {playerHealth}";
+        if (playerManaText != null) playerManaText.text = $"Player Mana: {playerMana}";
+        if (opponentHealthText != null) opponentHealthText.text = $"Enemy Health: {opponentHealth}";
+        if (opponentManaText != null) opponentManaText.text = $"Enemy Mana: {opponentMana}";
     }
 }
